@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Interactive Anniversary Card - Locked Group Position</title>
+    <title>Interactive Anniversary Card - Fully Responsive</title>
     <style>
         * {
             box-sizing: border-box;
@@ -101,13 +101,16 @@
             pointer-events: none;
         }
 
-        /* Posisi Item Standar Lainnya */
+        /* ==========================================================
+           ITEM POJOK (Otomatis Membesar/Mengecil Berdasarkan Layar)
+           ========================================================== */
         .s1-item-1 { position: absolute; top: 0%; right: 0%; width: 19.5%; height: auto; z-index: 2; pointer-events: none; }
         .s1-item-2 { position: absolute; bottom: 0%; left: 0%; width: 42%; height: auto; z-index: 2; pointer-events: none; }
         .s1-item-4 { position: absolute; bottom: -4%; right: -3.9%; width: 28%; height: auto; z-index: 2; pointer-events: none; }
         
         /* ==========================================================
-           GROUP WRAPPER: Mengunci Bulan, Bunga, dan Amplop Bersamaan
+           GROUP KUNCI: Bulan, Amplop, dan Bunga (Satu Kesatuan)
+           Ikut membesar/mengecil proporsional tanpa merubah posisi relatif
            ========================================================== */
         .center-group {
             position: absolute;
@@ -119,7 +122,6 @@
             pointer-events: none;
         }
 
-        /* Posisi relatif terhadap Group Wrapper (Menjaga keakuratan susunan & z-index asli) */
         .s1-item-3 { 
             position: absolute; 
             top: 0%; 
@@ -141,7 +143,7 @@
 
         .s1-item-6 { 
             position: absolute; 
-            bottom: -5.5% ; 
+            bottom: -5.5%; 
             right: -25.5%; 
             width: 58.2%; 
             height: auto; 
@@ -149,7 +151,6 @@
             pointer-events: none; 
         }
         
-        /* Area klik amplop disesuaikan agar tetap presisi menutupi amplop di dalam group */
         .envelope-target { 
             position: absolute; 
             top: 14%; 
@@ -207,7 +208,6 @@
             <img src="section-1-item-2.png" alt="Bottom Left Corner" class="s1-item-2">
             <img src="section-1-item-4.png" alt="Bottom Right Corner" class="s1-item-4">
             
-            <!-- GROUP KUNCI: Bulan, Amplop, dan Bunga di dalam satu wadah proporsional -->
             <div class="center-group">
                 <img src="section-1-item-5.png" alt="Moon Element" class="s1-item-5">
                 <img src="section-1-item-6.png" alt="Flowers Element" class="s1-item-6">
