@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Interactive Anniversary Card - Locked Group Position</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: #260508;
+            color: #fff;
+            overflow: hidden;
+            font-family: 'Georgia', serif;
+        }
+
+        /* Peringatan Rotasi untuk Posisi Portrait */
+        #orientation-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #3b0a0e;
+            z-index: 99999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+        }
+        #orientation-warning svg {
+            width: 15%;
+            height: auto;
+            margin-bottom: 20px;
+            animation: rotateIcon 2s infinite ease-in-out;
+        }
+        #orientation-warning p {
+            font-size: 1.2rem;
+            color: #f3d5b5;
+            line-height: 1.5;
+            max-width: 300px;
+        }
+        @keyframes rotateIcon {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+            100% { transform: rotate(90deg); }
+        }
+
+        @media screen and (orientation: portrait) {
+            #orientation-warning {
+                display: flex;
+            }
+            .card-container {
+                display: none;
+            }
+        }
+
+        /* Container Utama Full Layar Berbasis Persentase (%) */
+        .card-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #6d1a24;
+            overflow: hidden;
+        }
+
+        /* Pengaturan Halaman / Screen */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 1;
+        }
+        .screen.active {
+            display: block;
+            opacity: 1;
+            z-index: 10;
+        }
+
+        /* Background Menyesuaikan Penuh Layar Secara Identik */
+        .bg-reference {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Posisi Item Standar Lainnya */
+        .s1-item-1 { position: absolute; top: 0%; right: 0%; width: 19.5%; height: auto; z-index: 2; pointer-events: none; }
+        .s1-item-2 { position: absolute; bottom: 0%; left: 0%; width: 42%; height: auto; z-index: 2; pointer-events: none; }
+        .s1-item-4 { position: absolute; bottom: -4%; right: -3.9%; width: 28%; height: auto; z-index: 2; pointer-events: none; }
+        
+        /* ==========================================================
+           GROUP WRAPPER: Mengunci Bulan, Bunga, dan Amplop Bersamaan
+           ========================================================== */
+        .center-group {
+            position: absolute;
+            top: 16%;
+            left: 37%;
+            width: 27.5%;
+            height: 65%;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* Posisi relatif terhadap Group Wrapper (Menjaga keakuratan susunan & z-index asli) */
+        .s1-item-3 { 
+            position: absolute; 
+            top: 0%; 
+            left: 0%; 
+            width: 100%; 
+            height: auto; 
+            z-index: 2; 
+        }
+
+        .s1-item-5 { 
+            position: absolute; 
+            top: 38.5%; 
+            left: -20.7%; 
+            width: 66.5%; 
+            height: auto; 
+            z-index: 3; 
+            pointer-events: none; 
+        }
+
+        .s1-item-6 { 
+            position: absolute; 
+            bottom: -5.5% ; 
+            right: -25.5%; 
+            width: 58.2%; 
+            height: auto; 
+            z-index: 3; 
+            pointer-events: none; 
+        }
+        
+        /* Area klik amplop disesuaikan agar tetap presisi menutupi amplop di dalam group */
+        .envelope-target { 
+            position: absolute; 
+            top: 14%; 
+            left: 0%; 
+            width: 95%; 
+            height: 75%; 
+            background: transparent; 
+            z-index: 5; 
+            cursor: pointer; 
+            pointer-events: auto;
+        }
+
+        /* Screen 2 Menu Targets */
+        .menu-msg     { position: absolute; top: 35%; left: 20%; width: 18%; height: 45%; background: transparent; z-index: 5; cursor: pointer; }
+        .menu-moments { position: absolute; top: 35%; left: 41%; width: 18%; height: 45%; background: transparent; z-index: 5; cursor: pointer; }
+        .menu-flowers { position: absolute; top: 35%; left: 62%; width: 18%; height: 45%; background: transparent; z-index: 5; cursor: pointer; }
+
+        /* Screen 3, 4, 5 Items */
+        .s3-item-1 { position: absolute; top: 12%; left: 20%; width: 60%; height: auto; z-index: 2; }
+        .s4-item-1 { position: absolute; top: 12%; left: 20%; width: 60%; height: auto; z-index: 2; }
+        .s4-item-2 { position: absolute; top: 18%; left: 10%; width: 30%; height: auto; z-index: 2; }
+        .s5-item-1 { position: absolute; top: 12%; left: 25%; width: 50%; height: auto; z-index: 2; }
+
+        /* Tombol Kembali (Back) Universal */
+        .back-btn-pos {
+            position: absolute;
+            bottom: 5%;
+            left: 4%;
+            width: 8%;
+            height: auto;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .back-btn-pos:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="orientation-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f3d5b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+        </svg>
+        <p>Mohon putar perangkat Anda ke posisi <b>Horizontal (Landscape)</b> untuk melanjutkan kartu ucapan ini.</p>
+    </div>
+
+    <div class="card-container" id="mainCard">
+
+        <div id="screen-1" class="screen active">
+            <img src="section-1.png" alt="Background Section 1" class="bg-reference">
+            
+            <img src="section-1-item-1.png" alt="Top Right Corner" class="s1-item-1">
+            <img src="section-1-item-2.png" alt="Bottom Left Corner" class="s1-item-2">
+            <img src="section-1-item-4.png" alt="Bottom Right Corner" class="s1-item-4">
+            
+            <!-- GROUP KUNCI: Bulan, Amplop, dan Bunga di dalam satu wadah proporsional -->
+            <div class="center-group">
+                <img src="section-1-item-5.png" alt="Moon Element" class="s1-item-5">
+                <img src="section-1-item-6.png" alt="Flowers Element" class="s1-item-6">
+                <img src="section-1-item-3.png" alt="Amplop" class="s1-item-3">
+                <div class="envelope-target" onclick="openSurprise()"></div>
+            </div>
+        </div>
+
+        <div id="screen-2" class="screen">
+            <img src="section-2.png" alt="Background Section 2" class="bg-reference">
+
+            <div class="menu-msg" onclick="goToScreen('screen-3')"></div>
+            <div class="menu-moments" onclick="goToScreen('screen-4')"></div>
+            <div class="menu-flowers" onclick="goToScreen('screen-5')"></div>
+        </div>
+
+        <div id="screen-3" class="screen">
+            <img src="section-3.png" alt="Background Section 3" class="bg-reference">
+            <img src="section-3-item-1.png" alt="Polaroid & Pesan" class="s3-item-1">
+            <img src="section-3-item-2.png" alt="Back" class="back-btn-pos" onclick="goToScreen('screen-2')">
+        </div>
+
+        <div id="screen-4" class="screen">
+            <img src="section-4.png" alt="Background Section 4" class="bg-reference">
+            <img src="section-4-item-1.png" alt="Our Memories" class="s4-item-1">
+            <img src="section-4-item-2.png" alt="Kolase Foto" class="s4-item-2">
+            <img src="section-3-item-2.png" alt="Back" class="back-btn-pos" onclick="goToScreen('screen-2')">
+        </div>
+
+        <div id="screen-5" class="screen">
+            <img src="section-5.png" alt="Background Section 5" class="bg-reference">
+            <img src="section-5-item-1.png" alt="Detail Elemen" class="s5-item-1">
+            <img src="section-5-item-4.png" alt="Back" class="back-btn-pos" onclick="goToScreen('screen-2')">
+        </div>
+
+    </div>
+
+<script>
+    function goToScreen(screenId) {
+        const screens = document.querySelectorAll('.screen');
+        screens.forEach(screen => {
+            screen.classList.remove('active');
+        });
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function openSurprise() {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen().catch(err => {
+                console.log("Fullscreen ditolak browser, lanjut navigasi normal.");
+            });
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen();
+        }
+        
+        goToScreen('screen-2');
+    }
+</script>
+
+</body>
+</html>
