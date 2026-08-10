@@ -22,6 +22,12 @@
         .screen.active { display: block; opacity: 1; }
         .bg-reference { width: 100%; height: auto; display: block; pointer-events: none; }
 
+        /* ===== Screen 1 Custom Styling (1080x768 & Solid Red Background) ===== */
+        #screen-1 {
+            background-color: #6d1a24;
+            aspect-ratio: 1080 / 768;
+        }
+
         /* ===== Screen 1 Position & Elements ===== */
         .s1-item-1 { position: absolute; top: 0%; right: 0%; width: 40%; height: auto; z-index: 2; pointer-events: none; }
         .s1-item-2 { position: absolute; top: -15%; left: 0%; width: 82%; height: auto; z-index: 2; pointer-events: none; }
@@ -59,7 +65,6 @@
 
         <!-- Screen 1 -->
         <div id="screen-1" class="screen active">
-            <img src="section-1.png" alt="Background Section 1" class="bg-reference">
             <img src="section-1-item-1.png" alt="Top Right Torn Paper" class="s1-item-1">
             <img src="section-1-item-2.png" alt="Left Stars & Torn Paper" class="s1-item-2">
             <img src="section-1-item-6.png" alt="Red Flowers" class="s1-item-6">
