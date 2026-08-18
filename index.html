@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Interactive Anniversary Card - Ultra Cinematic Edition</title>
+    <title>Lunar Vellum</title>
 
     <!-- ==================== OPEN GRAPH & SOCIAL MEDIA THUMBNAIL META TAGS ==================== -->
-    <meta property="og:title" content="Happy Anniversary - Our Special Journey">
-    <meta property="og:description" content="Sebuah kenangan visual dan suara untuk merayakan hari spesial kita. Ketuk untuk membuka.">
+    <meta property="og:title" content="lunar vellum.">
+    <meta property="og:description" content="a little piece of us.">
     <meta property="og:image" content="https://by-luneva.github.io/Lunar-Vellum/thumbnail.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -16,8 +16,8 @@
 
     <!-- Twitter Card data -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Happy Anniversary - Our Special Journey">
-    <meta name="twitter:description" content="Sebuah kenangan visual dan suara untuk merayakan hari spesial kita. Ketuk untuk membuka.">
+    <meta name="twitter:title" content="lunar vellum.">
+    <meta name="twitter:description" content="a little piece of us.">
     <meta name="twitter:image" content="https://by-luneva.github.io/Lunar-Vellum/thumbnail.png">
 
     <style>
@@ -33,6 +33,47 @@
         }
         body::before { top: -120px; }
         body::after { bottom: -120px; }
+
+        /* ==================== LOADING SCREEN & PROGRESS BAR ==================== */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #7a1e2c 0%, #3a0e14 55%, #000000 100%);
+            z-index: 999999; display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        #loading-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loader-content {
+            display: flex; flex-direction: column; align-items: center; text-align: center; width: 80%; max-width: 280px;
+        }
+        .loader-spinner {
+            width: 40px; height: 40px; border: 3px solid rgba(243, 219, 160, 0.2);
+            border-top: 3px solid #f3dbb0; border-radius: 50%;
+            animation: spinLoader 1s linear infinite; margin-bottom: 16px;
+        }
+        .loader-text {
+            color: #f3dbb0; font-family: 'Georgia', serif; font-size: 0.85rem;
+            letter-spacing: 2px; text-transform: lowercase; opacity: 0.85; margin-bottom: 12px;
+        }
+        .loader-bar-container {
+            width: 100%; height: 4px; background: rgba(243, 219, 160, 0.2);
+            border-radius: 2px; overflow: hidden; position: relative;
+        }
+        .loader-bar {
+            width: 0%; height: 100%; background: #f3dbb0; border-radius: 2px;
+            transition: width 0.2s ease; box-shadow: 0 0 10px rgba(243, 219, 160, 0.6);
+        }
+        .loader-percentage {
+            color: #f3dbb0; font-family: 'Georgia', serif; font-size: 0.8rem;
+            margin-top: 10px; letter-spacing: 1.5px; opacity: 0.9;
+        }
+        @keyframes spinLoader {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         /* ==================== ANIMATIONS ==================== */
         @keyframes seqFadeUp { 0% { opacity: 0; transform: translateY(35px); } 100% { opacity: 1; transform: translateY(0); } }
@@ -227,6 +268,18 @@
 </head>
 <body>
 
+    <!-- LOADING SCREEN WITH SPINNER, BAR & PERCENTAGE -->
+    <div id="loading-screen">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">loading our story...</div>
+            <div class="loader-bar-container">
+                <div class="loader-bar" id="loaderBar"></div>
+            </div>
+            <div class="loader-percentage" id="loaderPercentage">0%</div>
+        </div>
+    </div>
+
     <canvas id="magic-canvas"></canvas>
 
     <audio id="voiceAudio" src="note.mp3" preload="auto"></audio>
@@ -337,6 +390,63 @@
     </div>
 
     <script>
+        /* ==================== ASSET PRELOADER & PERCENTAGE TRACKER ==================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            const images = document.querySelectorAll('img');
+            const audio = document.getElementById('voiceAudio');
+            const loaderBar = document.getElementById('loaderBar');
+            const loaderPercentage = document.getElementById('loaderPercentage');
+            const loadingScreen = document.getElementById('loading-screen');
+
+            let totalAssets = images.length + (audio ? 1 : 0);
+            let loadedAssets = 0;
+
+            function updateProgress() {
+                loadedAssets++;
+                let percentage = Math.floor((loadedAssets / totalAssets) * 100);
+                if (percentage > 100) percentage = 100;
+
+                if (loaderBar) loaderBar.style.width = percentage + '%';
+                if (loaderPercentage) loaderPercentage.innerText = percentage + '%';
+
+                if (loadedAssets >= totalAssets) {
+                    setTimeout(() => {
+                        if (loadingScreen) {
+                            loadingScreen.classList.add('fade-out');
+                            setTimeout(() => {
+                                loadingScreen.style.display = 'none';
+                            }, 800);
+                        }
+                    }, 400);
+                }
+            }
+
+            if (totalAssets === 0) {
+                if (loadingScreen) {
+                    loadingScreen.classList.add('fade-out');
+                    setTimeout(() => loadingScreen.style.display = 'none', 800);
+                }
+                return;
+            }
+
+            images.forEach(img => {
+                if (img.complete) {
+                    updateProgress();
+                } else {
+                    img.addEventListener('load', updateProgress);
+                    img.addEventListener('error', updateProgress);
+                }
+            });
+
+            if (audio) {
+                audio.addEventListener('canplaythrough', updateProgress, { once: true });
+                audio.addEventListener('error', updateProgress, { once: true });
+                if (audio.readyState >= 3) {
+                    updateProgress();
+                }
+            }
+        });
+
         /* ==================== NAVIGATION & VARIED TRANSITIONS ==================== */
         function goToScreen(screenId, transitionType = 'zoom') {
             const currentActive = document.querySelector('.screen.active');
