@@ -475,10 +475,6 @@
         }
 
         function openSurprise() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) elem.requestFullscreen().catch(() => {});
-            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-            else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
             goToScreen('screen-2', 'zoom');
         }
 
