@@ -211,6 +211,9 @@
     </div>
 
     <canvas id="magic-canvas"></canvas>
+    
+    <!-- Audio Elements: Background Music (beabadoobee-glue-song.mp3) & Voice Note (note.mp3) -->
+    <audio id="bgMusic" src="beabadoobee-glue-song.mp3" preload="auto" loop></audio>
     <audio id="voiceAudio" src="note.mp3" preload="auto"></audio>
 
     <!-- Photo Modal -->
@@ -322,12 +325,13 @@
         /* ==================== 1. ASSET PRELOADER & TRACKER ==================== */
         window.addEventListener('DOMContentLoaded', () => {
             const images = document.querySelectorAll('img');
-            const audio = document.getElementById('voiceAudio');
+            const bgMusic = document.getElementById('bgMusic');
+            const voiceAudio = document.getElementById('voiceAudio');
             const loaderBar = document.getElementById('loaderBar');
             const loaderPercentage = document.getElementById('loaderPercentage');
             const loadingScreen = document.getElementById('loading-screen');
 
-            let totalAssets = images.length + (audio ? 1 : 0);
+            let totalAssets = images.length + 2;
             let loadedAssets = 0;
 
             function finishLoading() {
@@ -355,11 +359,13 @@
                 else { img.addEventListener('load', updateProgress); img.addEventListener('error', updateProgress); }
             });
 
-            if (audio) {
-                audio.addEventListener('canplaythrough', updateProgress, { once: true });
-                audio.addEventListener('error', updateProgress, { once: true });
-                if (audio.readyState >= 3) updateProgress();
-            }
+            [bgMusic, voiceAudio].forEach(audio => {
+                if (audio) {
+                    audio.addEventListener('canplaythrough', updateProgress, { once: true });
+                    audio.addEventListener('error', updateProgress, { once: true });
+                    if (audio.readyState >= 3) updateProgress();
+                }
+            });
         });
 
 
@@ -401,7 +407,13 @@
             goToScreen(targetScreenId, transition, false);
         });
 
-        function openSurprise() { goToScreen('screen-2', 'zoom'); }
+        function openSurprise() {
+            const bgMusic = document.getElementById('bgMusic');
+            bgMusic.play().catch(error => {
+                console.log("Autoplay dicegah browser:", error);
+            });
+            goToScreen('screen-2', 'zoom');
+        }
 
 
         /* ==================== 3. LIGHTBOX ZOOM & PAN ==================== */
@@ -485,7 +497,8 @@
         });
 
 
-        /* ==================== 4. VOICE NOTE PLAYER ==================== */
+        /* ==================== 4. VOICE NOTE PLAYER WITH DUCKING EFFECT ==================== */
+        const bgMusic = document.getElementById('bgMusic');
         const voiceAudio = document.getElementById('voiceAudio');
         const voiceModal = document.getElementById('voiceModal');
         const playIconSvg = document.getElementById('playIconSvg');
@@ -499,6 +512,7 @@
             voiceModal.classList.remove('active');
             voiceAudio.pause();
             voiceAudio.currentTime = 0;
+            bgMusic.volume = 1.0; // Kembalikan volume lagu latar ke normal
             playIconSvg.style.display = 'block';
             pauseIconSvg.style.display = 'none';
             reelLeft.classList.remove('spinning');
@@ -507,6 +521,7 @@
 
         function togglePlayVoice() {
             if (voiceAudio.paused) {
+                bgMusic.volume = 0.2; // Kecilkan volume background musik (ducking)
                 voiceAudio.play();
                 playIconSvg.style.display = 'none';
                 pauseIconSvg.style.display = 'block';
@@ -514,6 +529,7 @@
                 reelRight.classList.add('spinning');
             } else {
                 voiceAudio.pause();
+                bgMusic.volume = 1.0; // Kembalikan volume lagu latar ke normal
                 playIconSvg.style.display = 'block';
                 pauseIconSvg.style.display = 'none';
                 reelLeft.classList.remove('spinning');
@@ -522,6 +538,7 @@
         }
 
         voiceAudio.addEventListener('ended', () => {
+            bgMusic.volume = 1.0; // Kembalikan volume lagu latar saat note selesai
             playIconSvg.style.display = 'block';
             pauseIconSvg.style.display = 'none';
             reelLeft.classList.remove('spinning');
